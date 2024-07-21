@@ -1,0 +1,57 @@
+version: '3.9'
+
+services:
+  mysql:
+    image: mysql:latest
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: eazybank_new
+      MYSQL_USER: Krishna
+      MYSQL_PASSWORD: 123456
+    ports:
+      - "3307:3306"  # Expose MySQL on port 3307 on the host
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - backend
+
+  springboot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: spring-boot-app
+    depends_on:
+      - mysql
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/eazybank_new
+      SPRING_DATASOURCE_USERNAME: Krishna
+      SPRING_DATASOURCE_PASSWORD: 123456
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: true
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQL8Dialect
+    networks:
+      - backend
+
+  angular:
+    image: bank-app-ui
+    container_name: angular-app
+    ports:
+      - "4200:80"  # Expose Angular app on port 4200
+    networks:
+      - frontend
+      - backend  # Add this network if Angular needs to communicate with Spring Boot
+
+networks:
+  backend:
+    driver: bridge
+  frontend:
+    driver: bridge
+    
+
+
+volumes:
+  mysql-data:
+
